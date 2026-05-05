@@ -1,0 +1,54 @@
+-- Query 1: 18-week breach rate by provider
+-- Identifies NHS providers with highest proportion of patients waiting over 18 weeks
+SELECT
+    PROVIDER_ORG_NAME,
+    SUM(PATIENT_COUNT) AS TOTAL_PATIENTS,
+    SUM(CASE WHEN WEEKS_WAITED > 18 THEN PATIENT_COUNT ELSE 0 END) AS BREACHED_PATIENTS,
+    ROUND(
+        SUM(CASE WHEN WEEKS_WAITED > 18 THEN PATIENT_COUNT ELSE 0 END) * 100.0 
+        / SUM(PATIENT_COUNT), 2
+    ) AS BREACH_RATE_PCT
+FROM RTT_WAITING_TIMES
+GROUP BY PROVIDER_ORG_NAME
+ORDER BY BREACH_RATE_PCT DESC
+LIMIT 10;
+
+
+-- Query 2: Average wait by RTT pathway type
+-- Incomplete pathways averaging 38 weeks against an 18-week target
+
+SELECT RTT_PART_DESCRIPTION
+, AVG
+(WEEKS_WAITED)
+FROM RTT_WAITING_TIMES
+GROUP BY RTT_PART_DESCRIPTION
+ORDER BY AVG
+(WEEKS_WAITED) DESC;
+
+
+-- Query 3: Providers with most patients on incomplete pathways (current waiters)
+-- GSTT appears at #8 with 96,441 incomplete pathways
+
+SELECT PROVIDER_ORG_NAME,
+    SUM(PATIENT_COUNT) AS TOTAL_PATIENTS,
+    AVG(WEEKS_WAITED)
+FROM RTT_WAITING_TIMES
+WHERE RTT_PART_DESCRIPTION = 'Incomplete Pathways'
+GROUP BY PROVIDER_ORG_NAME
+ORDER BY TOTAL_PATIENTS DESC
+LIMIT 10;
+
+-- Query 4: 18-week breach by specialty (GSTT only)
+-- Mental Health Services averaging 61 weeks -- over 3x the 18-week target
+
+SELECT TREATMENT_FUNCTION
+,
+        SUM
+(PATIENT_COUNT),
+        AVG
+(WEEKS_WAITED) AS AVG_WAIT_WEEK
+FROM RTT_WAITING_TIMES
+WHERE PROVIDER_ORG_NAME = 'GUY''S AND ST THOMAS'' NHS FOUNDATION TRUST'
+AND WEEKS_WAITED>18
+GROUP BY TREATMENT_FUNCTION
+ORDER BY AVG_WAIT_WEEK DESC;
