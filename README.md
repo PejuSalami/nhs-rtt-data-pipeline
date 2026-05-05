@@ -29,6 +29,9 @@ Python was used to read, clean, transform and analyse the data.
 - **Pandas** — data extraction, cleaning and transformation of the
   raw NHS England dataset
 - **Matplotlib** — visualisation of findings using a bar chart
+- **Snowflake** — cloud data warehouse used to store the transformed
+  dataset. 2.5 million rows loaded via Python connector and queried
+  using SQL to generate clinical insights.
 
 ## Key Findings
 
